@@ -1,0 +1,106 @@
+// get images from folder then make json file with image path
+
+
+
+*******run in postman****
+
+ use get method , url http://127.0.0.1:8001/api/getimages then run 
+ output : get images url 
+ {
+        "name": "download (1).jpeg",
+        "url": "http://127.0.0.1:8001/images/download (1).jpeg"
+    },
+    {
+        "name": "download (1).png",
+        "url": "http://127.0.0.1:8001/images/download (1).png"
+    },
+    
+    like this
+    
+    ***** we can also run on jsonlint , copy controller output and past in this site******
+
+
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+
+use Illuminate\Support\Facades\Storage;
+
+
+use Illuminate\Support\Facades\File; // Import the File class
+
+class GetImages extends Controller
+{
+
+    // public function getImages()
+    // {
+    //     $files = File::files(public_path('Archive')); // Get an array of file paths
+    //     $zipPath = public_path('Archive.zip'); // Set the path for the ZIP archive
+
+    //     // Create a new ZIP archive containing the files
+    //     $zip = new \ZipArchive;
+    //     $zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+    //     foreach ($files as $file) {
+    //         $zip->addFile($file, basename($file));
+    //     }
+    //     $zip->close();
+
+    //     // Download the ZIP archive
+    //     return response()->download($zipPath, 'Archive.zip');
+    // }
+
+
+    public function getImages()
+    {
+        $imagePath = public_path('Archive'); // Set the path for the images folder
+        $imageFiles = File::files($imagePath); // Get an array of image file paths
+
+        $images = []; // Initialize an array to store image data
+        foreach ($imageFiles as $file) {
+            $images[] = [
+                'name' => basename($file),
+                'url' => asset('images/' . basename($file))
+            ];
+        }
+
+        $jsonData = json_encode($images, JSON_PRETTY_PRINT); // Convert the image data to JSON
+
+        $jsonPath = public_path('images.json'); // Set the path for the JSON file
+        File::put($jsonPath, $jsonData); // Write the JSON data to the file
+
+        return response()->json($images); // Return the image data as a JSON response
+    }
+}
+
+
+
+///api.php   // route
+
+<?php
+
+use App\Http\Controllers\GetImages;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register API routes for your application. These
+| routes are loaded by the RouteServiceProvider and all of them will
+| be assigned to the "api" middleware group. Make something great!
+|
+*/
+
+Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+    return $request->user();
+});
+
+Route::get('getimages', [GetImages::class,'getimages']);
+
+Route::get('downloadfile', [GetImages::class,'downloadfile']);
+
+
